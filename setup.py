@@ -33,6 +33,8 @@ if __name__ == '__main__':
         entry_points={'console_scripts': ['map_ssh_attempts = map_ssh_attempts:main']},
         test_suite='map_ssh_attempts.testsuite',
         install_requires=['basemap',
+                          'matplotlib',
+                          'numpy',
                           'paramiko >= 1.7.4',
                           'pygeoip'],
         package_data={},
