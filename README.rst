@@ -22,3 +22,20 @@ This is a script to plot failed attempts to SSH into a remote machine on a
 world map showing the sources of those attempts.
 
 .. figure:: doc/example_map.png
+
+Dependencies
+============
+
+* Python 3
+* basemap
+* paramiko
+* matplotlib
+* numpy
+* pygeoip
+
+Installation
+============
+
+To install, run::
+
+  # ./setup.py install
