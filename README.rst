@@ -20,3 +20,5 @@ Map Failed SSH Attempts
 
 This is a script to plot failed attempts to SSH into a remote machine on a
 world map showing the sources of those attempts.
+
+.. figure:: doc/example_map.png
