@@ -82,7 +82,7 @@ def parse_datetime(string, fmt=None):
 
 
 def parse_log(log_file):
-    """Generate tuples of SSH attack events from `log_file` file-like object.
+    """Generate tuples of SSH attempt events from `log_file` file-like object.
 
     :param log_file: file-like object with contents of ``/var/log/auth.log``
     :return: list of tuples of the form (datetime, username, ip_address)
@@ -111,16 +111,16 @@ def ip_to_lon_lat(ip_address):
     return Coordinate(record['longitude'], record['latitude'])
 
 
-def plot_attack_locations(attacks, basemap):
-    """Plot the attack locations on `basemap`.
+def plot_attempt_locations(attempts, basemap):
+    """Plot the attempt locations on `basemap`.
 
-    :param attacks: list of Attack objects
+    :param attempts: list of Attempt objects
     :param basemap: Basemap object
     """
     lons = []
     lats = []
-    for attack in attacks:
-        coord = ip_to_lon_lat(attack.ip_address)
+    for attempt in attempts:
+        coord = ip_to_lon_lat(attempt.ip_address)
         lons.append(coord.longitude)
         lats.append(coord.latitude)
     x, y = basemap(lons, lats)
@@ -143,7 +143,7 @@ def setup_map():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Plot SSH attacks on a map.")
+    parser = argparse.ArgumentParser(description="Plot failed SSH attempts on a map.")
     parser.add_argument('action', type=str, choices=['plot', 'update'],
                         help="action to perform")
     parser.add_argument('hostname', type=str, nargs='?',
@@ -152,7 +152,7 @@ def main():
 
     if args.action == 'plot':
         basemap = setup_map()
-        plot_attack_locations(parse_log(open_auth_log(args.hostname)), basemap)
+        plot_attempt_locations(parse_log(open_auth_log(args.hostname)), basemap)
         plt.show()
     elif args.action == 'update':
         pass
