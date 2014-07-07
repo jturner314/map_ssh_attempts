@@ -3,62 +3,17 @@
 import argparse
 import collections
 import datetime
+import geoip
 import ipaddress
 import matplotlib.pyplot as plt
 import mpl_toolkits.basemap
 import numpy as np
-import os
-import os.path
 import paramiko.client
-import pygeoip
 import re
 import tempfile
-import urllib.request
-import gzip
-
-
-GEOIP_DBS = {4: ('GeoLiteCity.dat', 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz'),
-             6: ('GeoLiteCityv6.dat', 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz')}
 
 
 Attempt = collections.namedtuple('Attempt', ('datetime', 'username', 'ip_address'))
-
-
-Coordinate = collections.namedtuple('Coordinate', ('longitude', 'latitude'))
-
-
-def update_geoip_dbs(cache_dir='~/.cache/map_ssh_attempts'):
-    """Update GeoIP database cache.
-
-    :param cache_dir: directory in which to place the GeoIP databases
-    """
-    cache_dir = os.path.expanduser(cache_dir)
-    if not os.path.isdir(cache_dir):
-        if os.path.lexists(cache_dir):
-            raise NotADirectoryError('Download location exists but is not a directory.')
-        else:
-            os.makedirs(cache_dir)
-    for info in GEOIP_DBS.values():
-        name, url = info
-        with open(os.path.join(cache_dir, name), 'wb') as f:
-            db_gz = urllib.request.urlopen(url).read()
-            db = gzip.decompress(db_gz)
-            f.write(db)
-
-
-def open_geoip_dbs(cache_dir='~/.cache/map_ssh_attempts'):
-    """Create GeoIP objects from database files.
-
-    :param cache_dir: directory containing the GeoIP databases
-    """
-    cache_dir = os.path.expanduser(cache_dir)
-    dbs = {}
-    for version, info in GEOIP_DBS.items():
-        name, url = info
-        if not os.path.isfile(os.path.join(cache_dir, name)):
-            update_geoip_dbs(cache_dir)
-        dbs[version] = pygeoip.GeoIP(os.path.join(cache_dir, name))
-    return dbs
 
 
 def print_download_progress(done, todo):
@@ -67,7 +22,7 @@ def print_download_progress(done, todo):
     :param done: portion completed
     :param todo: total amount that needs to be done
     """
-    print('Downloading... {:.2%}'.format(done/todo), end='\r')
+    print('Downloading auth.log... {:.0%}'.format(done/todo), end='\r')
 
 
 def open_auth_log(hostname, *args, **kwargs):
@@ -137,16 +92,6 @@ def parse_log(log_file):
                     break
 
 
-def ip_to_lon_lat(ip_address, geoip_dbs):
-    """Given an IPv4Address or IPv6Address, return a GeoIP (lon,lat) coordinate pair.
-
-    :param ip_address: IPv4Address or IPv6Address object with address of host
-    :return: (longitude, latitude) tuple
-    """
-    record = geoip_dbs[ip_address.version].record_by_addr(str(ip_address))
-    return Coordinate(record['longitude'], record['latitude'])
-
-
 def plot_attempt_locations(attempts, basemap):
     """Plot the attempt locations on `basemap`.
 
@@ -155,9 +100,9 @@ def plot_attempt_locations(attempts, basemap):
     """
     lons = []
     lats = []
-    geoip_dbs = open_geoip_dbs()
+    geoipmv = geoip.GeoIPMultiversion()
     for attempt in attempts:
-        coord = ip_to_lon_lat(attempt.ip_address, geoip_dbs)
+        coord = geoipmv.coord_by_addr(attempt.ip_address)
         lons.append(coord.longitude)
         lats.append(coord.latitude)
     x, y = basemap(lons, lats)
@@ -192,7 +137,8 @@ def main():
         plot_attempt_locations(parse_log(open_auth_log(args.hostname)), basemap)
         plt.show()
     elif args.action == 'update':
-        update_geoip_dbs()
+        geoipmv = geoip.GeoIPMultiversion()
+        geoipmv.update_cache()
 
 
 if __name__ == '__main__':
