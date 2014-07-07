@@ -19,7 +19,6 @@
 import argparse
 import collections
 import datetime
-import geoip
 import ipaddress
 import matplotlib.pyplot as plt
 import mpl_toolkits.basemap
@@ -27,6 +26,7 @@ import numpy as np
 import paramiko.client
 import re
 import tempfile
+from . import geoip
 
 
 Attempt = collections.namedtuple('Attempt', ('datetime', 'username', 'ip_address'))
