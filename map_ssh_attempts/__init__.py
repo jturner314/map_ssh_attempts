@@ -24,20 +24,32 @@ from . import worldmap
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Plot failed SSH attempts on a map.")
-    parser.add_argument('action', type=str, choices=['plot', 'update'],
-                        help="action to perform")
-    parser.add_argument('hostname', type=str, nargs='?',
-                        help="hostname of remote server with auth.log")
+    parser = argparse.ArgumentParser(
+        description="Plot failed SSH attempts on a map.")
+    subparsers = parser.add_subparsers(dest='action', help="action to perform")
+
+    # Subparser update
+    parser_update = subparsers.add_parser(
+        'update', description="Update the GeoIP database cache.")
+
+    # Subparser map
+    parser_map = subparsers.add_parser(
+        'map', description="Plot data on a world map.")
+    parser_map.add_argument('property', type=str, choices=['coords'],
+                            help="property to map")
+    parser_map.add_argument('hostname', type=str,
+                            help="hostname of remote server to analyze")
+
     args = parser.parse_args()
 
-    if args.action == 'plot':
-        basemap = worldmap.setup_map()
-        worldmap.plot_attempt_locations(getdata.get_data(args.hostname), basemap)
-        plt.show()
-    elif args.action == 'update':
+    if args.action == 'update':
         geoipmv = geoip.GeoIPMultiversion()
         geoipmv.update_cache()
+    elif args.action == 'map':
+        basemap = worldmap.setup_map()
+        if args.property == 'coords':
+            worldmap.plot_attempt_locations(getdata.get_data(args.hostname), basemap)
+        plt.show()
 
 
 if __name__ == '__main__':
