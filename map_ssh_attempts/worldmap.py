@@ -17,23 +17,35 @@
 import mpl_toolkits.basemap
 import numpy as np
 from . import geoip
+from . import tor
 
 
-def plot_attempt_locations(basemap, attempts):
+def plot_attempt_locations(basemap, attempts, *, highlight_tor=False):
     """Plot the attempt locations on `basemap`.
 
     :param basemap: Basemap object
     :param attempts: list of Attempt objects
+    :param highlight_tor: highlight Tor exit nodes in a different color
     """
-    lons = []
-    lats = []
+    normal_lons = []
+    normal_lats = []
+    tor_lons = []
+    tor_lats = []
     geoipmv = geoip.GeoIPMultiversion()
+    tordb = tor.TorExitNodeDatabase()
     for attempt in attempts:
         coord = geoipmv.coord_by_addr(attempt.ip_address)
-        lons.append(coord.longitude)
-        lats.append(coord.latitude)
-    x, y = basemap(lons, lats)
-    basemap.plot(x, y, 'ro')
+        if tordb.is_tor_exit_node(attempt.ip_address):
+            tor_lons.append(coord.longitude)
+            tor_lats.append(coord.latitude)
+        else:
+            normal_lons.append(coord.longitude)
+            normal_lats.append(coord.latitude)
+    normal_x, normal_y = basemap(normal_lons, normal_lats)
+    tor_x, tor_y = basemap(tor_lons, tor_lats)
+    basemap.plot(normal_x, normal_y, 'ro')
+    tor_color = 'bo' if highlight_tor else 'ro'
+    basemap.plot(tor_x, tor_y, tor_color)
 
 
 def setup_map():

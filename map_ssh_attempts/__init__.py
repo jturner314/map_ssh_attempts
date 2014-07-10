@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 from . import geoip
 from . import getdata
 from . import plot
+from . import tor
 from . import worldmap
 
 
@@ -31,11 +32,13 @@ def main():
 
     # Subparser update
     parser_update = subparsers.add_parser(
-        'update', description="Update the GeoIP database cache.")
+        'update', description="Update the database cache.")
 
     # Subparser map
     parser_map = subparsers.add_parser(
         'map', description="Plot data on a world map.")
+    parser_map.add_argument('--hl_tor', action='store_true',
+                            help="highlight Tor exit nodes")
     parser_map.add_argument('property', type=str, choices=['coords'],
                             help="property to map")
     parser_map.add_argument('hostname', type=str,
@@ -55,10 +58,14 @@ def main():
     if args.action == 'update':
         geoipmv = geoip.GeoIPMultiversion()
         geoipmv.update_cache()
+        tordb = tor.TorExitNodeDatabase()
+        tordb.update_cache()
     elif args.action == 'map':
         basemap = worldmap.setup_map()
         if args.property == 'coords':
-            worldmap.plot_attempt_locations(basemap, getdata.get_data(args.hostname))
+            worldmap.plot_attempt_locations(
+                basemap, getdata.get_data(args.hostname),
+                highlight_tor=args.hl_tor)
         plt.show()
     elif args.action == 'bar':
         fig = plt.figure()
