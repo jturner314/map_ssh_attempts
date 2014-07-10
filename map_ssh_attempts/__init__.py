@@ -58,7 +58,7 @@ def main():
     elif args.action == 'map':
         basemap = worldmap.setup_map()
         if args.property == 'coords':
-            worldmap.plot_attempt_locations(getdata.get_data(args.hostname), basemap)
+            worldmap.plot_attempt_locations(basemap, getdata.get_data(args.hostname))
         plt.show()
     elif args.action == 'bar':
         fig = plt.figure()

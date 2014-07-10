@@ -19,11 +19,11 @@ import numpy as np
 from . import geoip
 
 
-def plot_attempt_locations(attempts, basemap):
+def plot_attempt_locations(basemap, attempts):
     """Plot the attempt locations on `basemap`.
 
-    :param attempts: list of Attempt objects
     :param basemap: Basemap object
+    :param attempts: list of Attempt objects
     """
     lons = []
     lats = []
