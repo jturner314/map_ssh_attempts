@@ -20,6 +20,7 @@ import argparse
 import matplotlib.pyplot as plt
 from . import geoip
 from . import getdata
+from . import plot
 from . import worldmap
 
 
@@ -40,6 +41,15 @@ def main():
     parser_map.add_argument('hostname', type=str,
                             help="hostname of remote server to analyze")
 
+    # Subparser bar
+    parser_bar = subparsers.add_parser(
+        'bar', description="Show bar plot of data.")
+    parser_bar.add_argument('property', type=str,
+                            choices=['username', 'country'],
+                            help="property to plot")
+    parser_bar.add_argument('hostname', type=str,
+                            help="hostname of remote server to analyze")
+
     args = parser.parse_args()
 
     if args.action == 'update':
@@ -49,6 +59,12 @@ def main():
         basemap = worldmap.setup_map()
         if args.property == 'coords':
             worldmap.plot_attempt_locations(getdata.get_data(args.hostname), basemap)
+        plt.show()
+    elif args.action == 'bar':
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        plot.bar_plot(ax, args.property, getdata.get_data(args.hostname))
+        fig.tight_layout()
         plt.show()
 
 

@@ -96,3 +96,13 @@ class GeoIPMultiversion(object):
             self.load_dbs()
         record = self.dbs[addr.version].record_by_addr(str(addr))
         return Coordinate(record['longitude'], record['latitude'])
+
+    def __getattr__(self, name):
+        if name.endswith('_by_addr'):
+            def f(addr):
+                if not self.check_loaded():
+                    self.load_dbs()
+                return getattr(self.dbs[addr.version], name)(str(addr))
+            return f
+        else:
+            raise AttributeError("'GeoIPMultiversion' has no attribute '{}'".format(name))
