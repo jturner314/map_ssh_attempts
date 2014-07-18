@@ -34,7 +34,12 @@ def plot_attempt_locations(basemap, attempts, *, highlight_tor=False):
     geoipmv = geoip.GeoIPMultiversion()
     tordb = tor.TorExitNodeDatabase()
     for attempt in attempts:
-        coord = geoipmv.coord_by_addr(attempt.ip_address)
+        try:
+            coord = geoipmv.coord_by_addr(attempt.ip_address)
+        except geoip.GeoIPError:
+            print("Warning: unable to find coordinates for {}".format(
+                attempt.ip_address))
+            continue
         if tordb.is_tor_exit_node(attempt.ip_address):
             tor_lons.append(coord.longitude)
             tor_lats.append(coord.latitude)

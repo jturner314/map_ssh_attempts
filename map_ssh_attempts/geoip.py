@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from pygeoip import GeoIPError
 import gzip
 import collections
 import os
@@ -95,7 +96,10 @@ class GeoIPMultiversion(object):
         if not self.check_loaded():
             self.load_dbs()
         record = self.dbs[addr.version].record_by_addr(str(addr))
-        return Coordinate(record['longitude'], record['latitude'])
+        if record:
+            return Coordinate(record['longitude'], record['latitude'])
+        else:
+            raise GeoIPError("Unable to determine coordinates.")
 
     def __getattr__(self, name):
         if name.endswith('_by_addr'):
