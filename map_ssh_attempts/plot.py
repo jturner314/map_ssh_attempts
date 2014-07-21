@@ -32,7 +32,12 @@ def bar_plot(ax, prop, attempts):
         if prop == 'username':
             data[attempt.username] = data.get(attempt.username, 0) + 1
         elif prop == 'country':
-            country = geoipmv.country_name_by_addr(attempt.ip_address)
+            try:
+                country = geoipmv.country_name_by_addr(attempt.ip_address)
+            except AttributeError:
+                print("Warning: unable to find country for {}".format(
+                    attempt.ip_address))
+                continue
             data[country] = data.get(country, 0) + 1
         else:
             raise ValueError("Unknown `prop` value: {}".format(prop))
